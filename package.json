@@ -1,0 +1,29 @@
+{
+  "name": "final",
+  "version": "1.0.0",
+  "description": "final project for class",
+  "main": "main/index.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "debug": "^4.4.3",
+    "express": "^5.2.1",
+    "mongodb": "^7.2.0",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/mongodb": "^4.0.6",
+    "@types/supertest": "^7.2.0",
+    "jest": "^30.3.0",
+    "mongodb-memory-server": "^11.1.0",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.9"
+  }
+}
