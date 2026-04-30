@@ -9,3 +9,9 @@ export interface User {
 }
 
 
+export interface UserDoc {
+      email   : string;
+      username: string;
+      amount  : number;
+      password: string;
+}

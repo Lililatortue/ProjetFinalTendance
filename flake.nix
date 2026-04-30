@@ -21,9 +21,9 @@
                         ];
                         shellHook = ''
                               echo "JS final project env"
-                              node -v
-                              npm  -v
-                              tsc  -v
+                              echo "node $(node -v)"
+                              echo "npm  $(npm  -v)"
+                              echo "tsc  $(tsc  -v)"
                         '';
                   };
             };

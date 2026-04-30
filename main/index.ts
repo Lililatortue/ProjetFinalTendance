@@ -1,111 +1,98 @@
 import express from 'express';
 import { createServer } from 'http';
 import { MongoClient } from 'mongodb';
-import { Auth } from './logic/auth';
-import { Jwt }  from './logic/jwt';
-import { ResponseError } from './model/exception';
+import { UserStore } from './logic/user';
+import { CoinFlip } from './logic/coin_flip';
+import { createRoutes } from './routes';
 import { Server } from "socket.io";
+declare module "socket.io" {
+  interface Socket {
+    userId: string;
+  }
+}
 
-const debug = require('debug')('app:log');
+const client = new MongoClient("mongodb+srv://willdescoteaux_db_user:Q7Jw5YgKg0ZhwIbH@cluster0.vmmqwiy.mongodb.net/?appName=Cluster0")
+
+
 const app = express()
-const client = new MongoClient("mongodb+srv://willdescoteaux_db_user:wyGxwDIsDo6wuOKP@cluster0.vmmqwiy.mongodb.net/?appName=Cluster0")
+app.use(express.json());
+app.use("/", createRoutes(client));
+
+const httpServer = createServer(app);
+
 
 
 //making the game work
-const httpServer = createServer(app);
 const io = new Server(httpServer, {
       cors: {
             origin: "*"
       }
 });
-httpServer.listen("3000",()=>{})
-io.on("FlipTheCoin",(socket)=>{
+
+let game = new CoinFlip()
+io.on("connection",(socket)=>{
+
+      const userId: string = socket.handshake.auth.userId;
+      socket.userId = userId;
+
+      socket.on("sendMessage", (message: string) => {
+            if (!message || message.trim().length === 0) return;
+
+            const chatPayload = {
+                  userId: socket.userId,
+                  text: message.trim(),
+                  timestamp: new Date().toISOString()
+            };
+
+            io.emit("newMessage", chatPayload);
+      });
 
 
+
+      socket.on("placeBet", (data) => { 
+        if (game.state !== 'betting') {
+            return socket.emit("error", "BETS ARE CLOSED");
+        }
+
+        game.AddBet(socket.userId,data.side,data.amount);
+
+        console.log(`Bet locked: ${socket.id} on ${data.side}`);
+        
+        socket.emit("betConfirmed");
+    });
 })
 
+let store = new UserStore(client);
+function loop(){
+      game.state = "betting"
+      //start game
+      game.startBets(60, ()=>{ 
+            let result = game.headsOrTails();
+
+            io.emit("ShowResult", result)
+
+            let winners = game.winner(result);
+            for (const [id, amount] of winners){ 
+                  store.AddMoney(id, amount * 2)
+            } 
+
+            setTimeout(loop,20)
+      });
+}
+async function startServer() {
+    try {
+        await client.connect(); 
+        console.log("Connected to MongoDB");
+
+        httpServer.listen(3000, () => {
+            console.log("Server listening on port 3000");
+            loop(); 
+        });
+    } catch (err) {
+        console.error("Failed to connect to DB:", err);
+        process.exit(1);
+    }
+}
+startServer();
 
 
-
-//routes
-
-//"mongodb+srv://willdescoteaux_db_user:wyGxwDIsDo6wuOKP@cluster0.vmmqwiy.mongodb.net/?appName=Cluster0"
-//auth
-app.post("/signup", async (req, res)=> {
-      debug("[SIGNUP][ROUTE]")
-      try{
-            const { email, uname, psw } = req.body
-            let auth  = new Auth(client);
-
-            await auth.add(email, uname, psw)
-
-            res.json({success: true})
-      }
-      catch(error) {
-            debug("[ERROR][SIGNUP] Error: %0", error)
-
-            if (error instanceof ResponseError) {
-                  return res.status(error.code || 500)
-                            .json({success: false, message: error.message || "internal server error"}) 
-            }
-
-            debug("[ERROR][SIGNUP] not a ResponseError class error: %0", error)
-            res.status(500).json({success: false, message: "internal server error"});
- 
-     }      
-});
-
-app.post("/login", async (req, res)=>{
-      debug("[LOGIN][ROUTE]"); 
-      try{
-            const { email, psw } = req.body
-            let auth  = new Auth(client)
-
-            let user = await auth.verify(email, psw)
-
-            let token= Jwt.Encode(user) 
-
-            res.json({success: true, token: token})
-      }
-      catch(error) {
-            debug("[ERROR][LOGIN] Error: %0", error)
-
-            if (error instanceof ResponseError) {
-                  return res.status(error.code || 500)
-                            .json({success: false, message: error.message || "internal server error"}) 
-            }
-
-            debug("[ERROR][LOGIN] not a ResponseError class error: %0", error)
-            res.status(500).json({success: false, message: "internal server error"});
-      }
-});
-
-//account
-app.get("/account", (req, res)=>{
-      debug("[ACCOUNT][ROUTE]")
-      Jwt.Decode(req.body.user);
-      
-
-});
-app.get("/account/money", (req, res)=> { 
-      debug("[ACCOUNT][MONEY][ROUTE]")
-      Jwt.Decode(req.body.user);
-      
-});
-
-//chat
-app.post("/chat/", (req, res)=>{
-      debug("[CHAT][ROUTE]"); 
-
-});
-//bet
-app.post("/bet/", (req, res)=>{
-      debug("[BET][ROUTE]"); 
-      
-});
-
-app.get("/stats/", (req, res)=> {
-      debug("[STATS][ROUTE]"); 
-
-
-});
