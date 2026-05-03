@@ -1,4 +1,3 @@
-import { User } from '../model/user'
 const debug = require('debug')('app:log');
 
 export class CoinFlip {

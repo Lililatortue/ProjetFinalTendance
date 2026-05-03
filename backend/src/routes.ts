@@ -22,11 +22,16 @@ export const createRoutes = (client: any) => {
 
                   if (error instanceof ResponseError) {
                         return res.status(error.code || 500)
-                            .json({success: false, message: error.message || "internal server error"}) 
+                            .json({success: false, message: error.message 
+                                  || "internal server error"}
+                                 ) 
                   }
 
                   debug("[ERROR][SIGNUP] not a ResponseError class error: %0", error)
-                  res.status(500).json({success: false, message: "internal server error"}); 
+                  res.status(500).json({
+                        success: false,
+                        message: "internal server error"
+                  }); 
             }      
       });
 
@@ -54,26 +59,6 @@ export const createRoutes = (client: any) => {
                   res.status(500).json({success: false, message: "internal server error"});
             }
       });
-
-      //account
-      router.get("/account", (req, res)=>{
-            debug("[ACCOUNT][ROUTE]")
-            Jwt.Decode(req.body.user);
-      
-
-      });
-      router.get("/account/money", (req, res)=> { 
-            debug("[ACCOUNT][MONEY][ROUTE]")
-            Jwt.Decode(req.body.user);
-      
-      });
-
-      router.get("/stats/", (req, res)=> {
-            debug("[STATS][ROUTE]"); 
-
-
-      });
-
       return router;
 }
 

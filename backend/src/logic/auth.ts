@@ -7,7 +7,6 @@ import { User, UserDoc } from '../model/user'
 const debug = require('debug')('app:log');
 
 
-
 export class Auth {
       private users: Collection<UserDoc>;
       

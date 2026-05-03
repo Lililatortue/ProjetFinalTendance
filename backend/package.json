@@ -2,9 +2,9 @@
   "name": "final",
   "version": "1.0.0",
   "description": "final project for class",
-  "main": "main/index.ts",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "tsx ./main/index.ts",
+    "start": "tsx ./src/index.ts",
     "test": "jest"
   },
   "author": "",
@@ -15,7 +15,9 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.2.0",
-    "socket.io": "^4.8.3"
+    "react": "^19.2.5",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
