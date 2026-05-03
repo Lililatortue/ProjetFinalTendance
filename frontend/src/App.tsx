@@ -6,6 +6,7 @@ import io from "socket.io-client";
 import Dashboard from "./page/dashboard";
 import Login from "./page/login";
 import Signup from './page/signup';
+import Account from "./page/account";
 
 // Initialize socket outside component to prevent multiple instances
 const socket = io("http://localhost:3000", { 
@@ -98,6 +99,7 @@ export default function App() {
 />
                 <Route path="/login"  element={<Login onLoginSuccess={connectSocket}/>} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/account" element={<Account />} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<div style={{color: 'white'}}>Page Not Found</div>} />
             </Routes>
